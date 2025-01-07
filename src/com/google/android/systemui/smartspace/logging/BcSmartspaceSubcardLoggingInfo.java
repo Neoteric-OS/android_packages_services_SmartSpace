@@ -1,20 +1,16 @@
 package com.google.android.systemui.smartspace.logging;
 
-import java.util.ArrayList;
+import androidx.activity.BackEventCompat$$ExternalSyntheticOutline0;
 import java.util.List;
 import java.util.Objects;
 
+/* compiled from: go/retraceme 97024faaf470985feb378c0f604e66d2eca678dbbb151206fad2ab4525fd6f86 */
+/* loaded from: classes2.dex */
 public final class BcSmartspaceSubcardLoggingInfo {
     public int mClickedSubcardIndex;
-    public List<BcSmartspaceCardMetadataLoggingInfo> mSubcards;
-
-    public static final class Builder {
-        public int mClickedSubcardIndex;
-        public List<BcSmartspaceCardMetadataLoggingInfo> mSubcards;
-    }
+    public List mSubcards;
 
     public final boolean equals(Object obj) {
-        boolean z = true;
         if (this == obj) {
             return true;
         }
@@ -22,30 +18,17 @@ public final class BcSmartspaceSubcardLoggingInfo {
             return false;
         }
         BcSmartspaceSubcardLoggingInfo bcSmartspaceSubcardLoggingInfo = (BcSmartspaceSubcardLoggingInfo) obj;
-        if (this.mClickedSubcardIndex != bcSmartspaceSubcardLoggingInfo.mClickedSubcardIndex || !Objects.equals(this.mSubcards, bcSmartspaceSubcardLoggingInfo.mSubcards)) {
-            z = false;
-        }
-        return z;
-    }
-
-    public final String toString() {
-        StringBuilder m = LogBuilder.m("BcSmartspaceSubcardLoggingInfo{mSubcards=");
-        m.append(this.mSubcards);
-        m.append(", mClickedSubcardIndex=");
-        return LogBuilder.m(m, this.mClickedSubcardIndex, '}');
-    }
-
-    public BcSmartspaceSubcardLoggingInfo(Builder builder) {
-        List<BcSmartspaceCardMetadataLoggingInfo> list = builder.mSubcards;
-        if (list != null) {
-            this.mSubcards = list;
-        } else {
-            this.mSubcards = new ArrayList();
-        }
-        this.mClickedSubcardIndex = builder.mClickedSubcardIndex;
+        return this.mClickedSubcardIndex == bcSmartspaceSubcardLoggingInfo.mClickedSubcardIndex && Objects.equals(this.mSubcards, bcSmartspaceSubcardLoggingInfo.mSubcards);
     }
 
     public final int hashCode() {
         return Objects.hash(this.mSubcards, Integer.valueOf(this.mClickedSubcardIndex));
+    }
+
+    public final String toString() {
+        StringBuilder sb = new StringBuilder("BcSmartspaceSubcardLoggingInfo{mSubcards=");
+        sb.append(this.mSubcards);
+        sb.append(", mClickedSubcardIndex=");
+        return BackEventCompat$$ExternalSyntheticOutline0.m(sb, this.mClickedSubcardIndex, '}');
     }
 }

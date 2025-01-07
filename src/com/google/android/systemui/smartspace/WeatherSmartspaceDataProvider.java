@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import com.android.systemui.plugins.BcSmartspaceDataPlugin;
+import com.android.wm.shell.R;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,8 +15,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-/* compiled from: go/retraceme 8fa908dd7f7cdf82919b81f8a849d2e4d6278999a179aaed94e232ba94c0a60d */
-/* loaded from: /Users/aksrivas/Downloads/SystemUIGoogle_decompile_xml/.cache/classes2.dex */
+/* compiled from: go/retraceme 97024faaf470985feb378c0f604e66d2eca678dbbb151206fad2ab4525fd6f86 */
+/* loaded from: classes2.dex */
 public final class WeatherSmartspaceDataProvider implements BcSmartspaceDataPlugin {
     public static final boolean DEBUG = Log.isLoggable("WeatherSSDataProvider", 3);
     public final Set mSmartspaceTargetListeners = new HashSet();
@@ -24,7 +25,7 @@ public final class WeatherSmartspaceDataProvider implements BcSmartspaceDataPlug
 
     @Override // com.android.systemui.plugins.BcSmartspaceDataPlugin
     public final BcSmartspaceDataPlugin.SmartspaceView getView(ViewGroup viewGroup) {
-        return (BcSmartspaceDataPlugin.SmartspaceView) LayoutInflater.from(viewGroup.getContext()).inflate(2131559195, viewGroup, false);
+        return (BcSmartspaceDataPlugin.SmartspaceView) LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.weather, viewGroup, false);
     }
 
     @Override // com.android.systemui.plugins.BcSmartspaceDataPlugin
@@ -44,13 +45,12 @@ public final class WeatherSmartspaceDataProvider implements BcSmartspaceDataPlug
             Log.d("WeatherSSDataProvider", sb.toString());
             Log.d("WeatherSSDataProvider", "    targets = " + list.toString());
         }
-        List list2 = this.mSmartspaceTargets;
-        ((ArrayList) list2).clear();
+        this.mSmartspaceTargets.clear();
         Iterator it = list.iterator();
         while (it.hasNext()) {
             SmartspaceTarget smartspaceTarget = (SmartspaceTarget) it.next();
             if (smartspaceTarget.getFeatureType() == 1) {
-                ((ArrayList) list2).add(smartspaceTarget);
+                this.mSmartspaceTargets.add(smartspaceTarget);
             }
         }
         this.mSmartspaceTargetListeners.forEach(new Consumer() { // from class: com.google.android.systemui.smartspace.WeatherSmartspaceDataProvider$$ExternalSyntheticLambda0
@@ -63,7 +63,7 @@ public final class WeatherSmartspaceDataProvider implements BcSmartspaceDataPlug
 
     @Override // com.android.systemui.plugins.BcSmartspaceDataPlugin
     public final void registerListener(BcSmartspaceDataPlugin.SmartspaceTargetListener smartspaceTargetListener) {
-        ((HashSet) this.mSmartspaceTargetListeners).add(smartspaceTargetListener);
+        this.mSmartspaceTargetListeners.add(smartspaceTargetListener);
         smartspaceTargetListener.onSmartspaceTargetsUpdated(this.mSmartspaceTargets);
     }
 
@@ -74,6 +74,6 @@ public final class WeatherSmartspaceDataProvider implements BcSmartspaceDataPlug
 
     @Override // com.android.systemui.plugins.BcSmartspaceDataPlugin
     public final void unregisterListener(BcSmartspaceDataPlugin.SmartspaceTargetListener smartspaceTargetListener) {
-        ((HashSet) this.mSmartspaceTargetListeners).remove(smartspaceTargetListener);
+        this.mSmartspaceTargetListeners.remove(smartspaceTargetListener);
     }
 }

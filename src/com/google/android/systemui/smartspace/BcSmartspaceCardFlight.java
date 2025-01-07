@@ -8,10 +8,12 @@ import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.ImageView;
-import com.android.systemui.bcsmartspace.R;
 import com.android.systemui.plugins.BcSmartspaceDataPlugin;
+import com.android.wm.shell.R;
 import com.google.android.systemui.smartspace.logging.BcSmartspaceCardLoggingInfo;
 
+/* compiled from: go/retraceme 97024faaf470985feb378c0f604e66d2eca678dbbb151206fad2ab4525fd6f86 */
+/* loaded from: classes2.dex */
 public class BcSmartspaceCardFlight extends BcSmartspaceCardSecondary {
     public ImageView mQrCodeView;
 
@@ -19,12 +21,10 @@ public class BcSmartspaceCardFlight extends BcSmartspaceCardSecondary {
         super(context);
     }
 
-    @Override // com.google.android.systemui.smartspace.BcSmartspaceCardSecondary
-    public final void setTextColor(int i) {
-    }
-
-    public BcSmartspaceCardFlight(Context context, AttributeSet attributeSet) {
-        super(context, attributeSet);
+    @Override // android.view.View
+    public final void onFinishInflate() {
+        super.onFinishInflate();
+        this.mQrCodeView = (ImageView) findViewById(R.id.flight_qr_code);
     }
 
     @Override // com.google.android.systemui.smartspace.BcSmartspaceCardSecondary
@@ -32,30 +32,29 @@ public class BcSmartspaceCardFlight extends BcSmartspaceCardSecondary {
         BcSmartspaceTemplateDataUtils.updateVisibility(this.mQrCodeView, 8);
     }
 
-    public final void onFinishInflate() {
-        super.onFinishInflate();
-        this.mQrCodeView = (ImageView) findViewById(R.id.flight_qr_code);
-    }
-
     @Override // com.google.android.systemui.smartspace.BcSmartspaceCardSecondary
     public final boolean setSmartspaceActions(SmartspaceTarget smartspaceTarget, BcSmartspaceDataPlugin.SmartspaceEventNotifier smartspaceEventNotifier, BcSmartspaceCardLoggingInfo bcSmartspaceCardLoggingInfo) {
-        Bundle extras;
         SmartspaceAction baseAction = smartspaceTarget.getBaseAction();
-        if (baseAction == null) {
-            extras = null;
-        } else {
-            extras = baseAction.getExtras();
-        }
+        Bundle extras = baseAction == null ? null : baseAction.getExtras();
         if (extras == null || !extras.containsKey("qrCodeBitmap")) {
             return false;
         }
         Bitmap bitmap = (Bitmap) extras.get("qrCodeBitmap");
-        if (this.mQrCodeView == null) {
+        ImageView imageView = this.mQrCodeView;
+        if (imageView == null) {
             Log.w("BcSmartspaceCardFlight", "No flight QR code view to update");
         } else {
-            this.mQrCodeView.setImageBitmap(bitmap);
+            imageView.setImageBitmap(bitmap);
         }
         BcSmartspaceTemplateDataUtils.updateVisibility(this.mQrCodeView, 0);
         return true;
+    }
+
+    public BcSmartspaceCardFlight(Context context, AttributeSet attributeSet) {
+        super(context, attributeSet);
+    }
+
+    @Override // com.google.android.systemui.smartspace.BcSmartspaceCardSecondary
+    public final void setTextColor(int i) {
     }
 }

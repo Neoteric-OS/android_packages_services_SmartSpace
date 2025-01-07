@@ -1,215 +1,222 @@
 package com.google.android.systemui.smartspace;
 
-import android.app.smartspace.SmartspaceAction;
 import android.app.smartspace.SmartspaceTarget;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.res.AssetManager;
-import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
+import android.content.res.Resources;
+import android.graphics.Canvas;
 import android.graphics.ImageDecoder;
-import android.graphics.drawable.AnimationDrawable;
+import android.graphics.Path;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.DrawableWrapper;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.Size;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.graphics.drawable.RoundedBitmapDrawable;
-import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
-import com.android.launcher3.icons.RoundDrawableWrapper;
-import com.android.systemui.bcsmartspace.R;
-import com.android.systemui.plugins.BcSmartspaceDataPlugin;
-import com.google.android.systemui.smartspace.logging.BcSmartspaceCardLoggingInfo;
+import com.android.internal.util.LatencyTracker;
+import com.android.wm.shell.R;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
+/* compiled from: go/retraceme 97024faaf470985feb378c0f604e66d2eca678dbbb151206fad2ab4525fd6f86 */
+/* loaded from: classes2.dex */
 public class BcSmartspaceCardDoorbell extends BcSmartspaceCardGenericImage {
+    public static final /* synthetic */ int $r8$clinit = 0;
     public int mGifFrameDurationInMs;
+    public final LatencyInstrumentContext mLatencyInstrumentContext;
     public ImageView mLoadingIcon;
     public ViewGroup mLoadingScreenView;
     public String mPreviousTargetId;
     public ProgressBar mProgressBar;
-    public final HashMap mUriToDrawable;
+    public final Map mUriToDrawable;
+
+    /* compiled from: go/retraceme 97024faaf470985feb378c0f604e66d2eca678dbbb151206fad2ab4525fd6f86 */
+    public final class DrawableWithUri extends DrawableWrapper {
+        public final Path mClipPath;
+        public final ContentResolver mContentResolver;
+        public Drawable mDrawable;
+        public final int mHeightInPx;
+        public final WeakReference mImageViewWeakReference;
+        public final WeakReference mLoadingScreenWeakReference;
+        public final float mScaledCornerRadius;
+        public final RectF mTempRect;
+        public final Uri mUri;
+
+        public DrawableWithUri(Uri uri, ContentResolver contentResolver, int i, float f, WeakReference weakReference, WeakReference weakReference2) {
+            super(new ColorDrawable(0));
+            this.mTempRect = new RectF();
+            this.mClipPath = new Path();
+            this.mScaledCornerRadius = f;
+            this.mUri = uri;
+            this.mHeightInPx = i;
+            this.mContentResolver = contentResolver;
+            this.mImageViewWeakReference = weakReference;
+            this.mLoadingScreenWeakReference = weakReference2;
+        }
+
+        @Override // android.graphics.drawable.DrawableWrapper, android.graphics.drawable.Drawable
+        public final void draw(Canvas canvas) {
+            int save = canvas.save();
+            canvas.clipPath(this.mClipPath);
+            super.draw(canvas);
+            canvas.restoreToCount(save);
+        }
+
+        @Override // android.graphics.drawable.DrawableWrapper, android.graphics.drawable.Drawable
+        public final void onBoundsChange(Rect rect) {
+            this.mTempRect.set(getBounds());
+            this.mClipPath.reset();
+            Path path = this.mClipPath;
+            RectF rectF = this.mTempRect;
+            float f = this.mScaledCornerRadius;
+            path.addRoundRect(rectF, f, f, Path.Direction.CCW);
+            super.onBoundsChange(rect);
+        }
+    }
+
+    /* compiled from: go/retraceme 97024faaf470985feb378c0f604e66d2eca678dbbb151206fad2ab4525fd6f86 */
+    public final class LatencyInstrumentContext {
+        public final LatencyTracker mLatencyTracker;
+        public final Set mUriSet = new HashSet();
+
+        public LatencyInstrumentContext(Context context) {
+            this.mLatencyTracker = LatencyTracker.getInstance(context);
+        }
+
+        public final void cancelInstrument() {
+            if (this.mUriSet.isEmpty()) {
+                return;
+            }
+            this.mLatencyTracker.onActionCancel(22);
+            this.mUriSet.clear();
+        }
+    }
+
+    /* compiled from: go/retraceme 97024faaf470985feb378c0f604e66d2eca678dbbb151206fad2ab4525fd6f86 */
+    public final class LoadUriTask extends AsyncTask {
+        public final LatencyInstrumentContext mInstrumentContext;
+
+        public LoadUriTask(LatencyInstrumentContext latencyInstrumentContext) {
+            this.mInstrumentContext = latencyInstrumentContext;
+        }
+
+        @Override // android.os.AsyncTask
+        public final Object doInBackground(Object[] objArr) {
+            DrawableWithUri[] drawableWithUriArr = (DrawableWithUri[]) objArr;
+            Drawable drawable = null;
+            if (drawableWithUriArr.length <= 0) {
+                return null;
+            }
+            DrawableWithUri drawableWithUri = drawableWithUriArr[0];
+            try {
+                InputStream openInputStream = drawableWithUri.mContentResolver.openInputStream(drawableWithUri.mUri);
+                try {
+                    final int i = drawableWithUri.mHeightInPx;
+                    int i2 = BcSmartspaceCardDoorbell.$r8$clinit;
+                    try {
+                        drawable = ImageDecoder.decodeDrawable(ImageDecoder.createSource((Resources) null, openInputStream), new ImageDecoder.OnHeaderDecodedListener() { // from class: com.google.android.systemui.smartspace.BcSmartspaceCardDoorbell$$ExternalSyntheticLambda0
+                            @Override // android.graphics.ImageDecoder.OnHeaderDecodedListener
+                            public final void onHeaderDecoded(ImageDecoder imageDecoder, ImageDecoder.ImageInfo imageInfo, ImageDecoder.Source source) {
+                                int i3 = i;
+                                int i4 = BcSmartspaceCardDoorbell.$r8$clinit;
+                                imageDecoder.setAllocator(3);
+                                imageDecoder.setTargetSize((int) (i3 * (imageInfo.getSize().getHeight() != 0 ? r2.getWidth() / r2.getHeight() : 0.0f)), i3);
+                            }
+                        });
+                    } catch (IOException e) {
+                        Log.e("BcSmartspaceCardBell", "Unable to decode stream: " + e);
+                    }
+                    drawableWithUri.mDrawable = drawable;
+                    if (openInputStream != null) {
+                        openInputStream.close();
+                    }
+                } finally {
+                }
+            } catch (Exception e2) {
+                Log.w("BcSmartspaceCardBell", "open uri:" + drawableWithUri.mUri + " got exception:" + e2);
+            }
+            return drawableWithUri;
+        }
+
+        @Override // android.os.AsyncTask
+        public final void onCancelled() {
+            this.mInstrumentContext.cancelInstrument();
+        }
+
+        @Override // android.os.AsyncTask
+        public final void onPostExecute(Object obj) {
+            DrawableWithUri drawableWithUri = (DrawableWithUri) obj;
+            if (drawableWithUri == null) {
+                return;
+            }
+            Drawable drawable = drawableWithUri.mDrawable;
+            if (drawable != null) {
+                drawableWithUri.setDrawable(drawable);
+                ImageView imageView = (ImageView) drawableWithUri.mImageViewWeakReference.get();
+                int intrinsicWidth = drawableWithUri.mDrawable.getIntrinsicWidth();
+                if (imageView.getLayoutParams().width != intrinsicWidth) {
+                    Log.d("BcSmartspaceCardBell", "imageView requestLayout " + drawableWithUri.mUri);
+                    imageView.getLayoutParams().width = intrinsicWidth;
+                    imageView.requestLayout();
+                }
+                LatencyInstrumentContext latencyInstrumentContext = this.mInstrumentContext;
+                Uri uri = drawableWithUri.mUri;
+                if (!latencyInstrumentContext.mUriSet.isEmpty()) {
+                    if (uri == null || !latencyInstrumentContext.mUriSet.remove(uri)) {
+                        latencyInstrumentContext.cancelInstrument();
+                    } else if (latencyInstrumentContext.mUriSet.isEmpty()) {
+                        latencyInstrumentContext.mLatencyTracker.onActionEnd(22);
+                    }
+                }
+            } else {
+                BcSmartspaceTemplateDataUtils.updateVisibility((ImageView) drawableWithUri.mImageViewWeakReference.get(), 8);
+                this.mInstrumentContext.cancelInstrument();
+            }
+            BcSmartspaceTemplateDataUtils.updateVisibility((View) drawableWithUri.mLoadingScreenWeakReference.get(), 8);
+        }
+    }
 
     public BcSmartspaceCardDoorbell(Context context) {
-        super(context);
-        this.mUriToDrawable = new HashMap();
-        this.mGifFrameDurationInMs = 200;
-    }
-
-    public BcSmartspaceCardDoorbell(Context context, AttributeSet attributeSet) {
-        super(context, attributeSet);
-        this.mUriToDrawable = new HashMap();
-        this.mGifFrameDurationInMs = 200;
-    }
-
-    @Override // com.google.android.systemui.smartspace.BcSmartspaceCardGenericImage, com.google.android.systemui.smartspace.BcSmartspaceCardSecondary
-    public final boolean setSmartspaceActions(SmartspaceTarget smartspaceTarget, BcSmartspaceDataPlugin.SmartspaceEventNotifier smartspaceEventNotifier, BcSmartspaceCardLoggingInfo bcSmartspaceCardLoggingInfo) {
-        if (!isSysUiContext()) {
-            return false;
-        }
-        SmartspaceAction baseAction = smartspaceTarget.getBaseAction();
-        Bundle extras = baseAction != null ? baseAction.getExtras() : null;
-        List<Uri> imageUris = getImageUris(smartspaceTarget);
-        if (!imageUris.isEmpty()) {
-            if (extras != null && extras.containsKey("frameDurationMs")) {
-                this.mGifFrameDurationInMs = extras.getInt("frameDurationMs");
-            }
-            maybeResetImageView(smartspaceTarget);
-            BcSmartspaceTemplateDataUtils.updateVisibility(this.mImageView, 0);
-            loadImageUris(imageUris);
-            Log.d("BcSmartspaceCardBell", "imageUri is set");
-            return true;
-        } else if (extras != null && extras.containsKey("imageBitmap")) {
-            Bitmap bitmap = (Bitmap) extras.get("imageBitmap");
-            maybeResetImageView(smartspaceTarget);
-            BcSmartspaceTemplateDataUtils.updateVisibility(this.mImageView, 0);
-            if (bitmap != null) {
-                setRoundedBitmapDrawable(bitmap);
-                Log.d("BcSmartspaceCardBell", "imageBitmap is set");
-                return true;
-            }
-            return true;
-        } else if (extras == null || !extras.containsKey("loadingScreenState")) {
-            return false;
-        } else {
-            int i3 = extras.getInt("loadingScreenState");
-            String dimensionRatio = BcSmartSpaceUtil.getDimensionRatio(extras);
-            if (dimensionRatio == null) {
-                return false;
-            }
-            maybeResetImageView(smartspaceTarget);
-            showLoadingScreen(dimensionRatio, extras, i3);
-            return true;
-        }
-    }
-
-    private boolean isSysUiContext() {
-        return getContext().getPackageName().equals("com.android.systemui");
-    }
-
-    private List<Uri> getImageUris(SmartspaceTarget smartspaceTarget) {
-        return (List) smartspaceTarget.getIconGrid().stream().filter(action -> {
-            return action.getExtras().containsKey("imageUri");
-        }).map(action2 -> {
-            return action2.getExtras().getString("imageUri");
-        }).map(obj -> {
-            return Uri.parse(obj);
-        }).collect(Collectors.toList());
-    }
-
-    private void loadImageUris(List<Uri> list) {
-        addFramesToAnimatedDrawable((List) list.stream().map(uri -> {
-            return computeImageUri(getContext().getApplicationContext().getContentResolver(), getResources().getDimensionPixelOffset(R.dimen.enhanced_smartspace_height), getResources().getDimension(R.dimen.enhanced_smartspace_secondary_card_corner_radius), new WeakReference(this.mImageView), new WeakReference(this.mLoadingScreenView), uri);
-        }).filter(d -> {
-            return Objects.nonNull(d);
-        }).collect(Collectors.toList()));
-    }
-
-    private void addFramesToAnimatedDrawable(List<Drawable> list) {
-        AnimationDrawable animationDrawable = new AnimationDrawable();
-        for (Drawable drawable : list) {
-            animationDrawable.addFrame(drawable, this.mGifFrameDurationInMs);
-        }
-        this.mImageView.setImageDrawable(animationDrawable);
-        animationDrawable.start();
-    }
-
-    private DrawableWithUri computeImageUri(ContentResolver contentResolver, int i, float f, WeakReference weakReference, WeakReference weakReference2, Uri uri) {
-        return (DrawableWithUri) this.mUriToDrawable.computeIfAbsent(uri, newUri -> {
-            return drawImageUri(contentResolver, i, f, weakReference, weakReference2, (Uri) newUri);
-        });
-    }
-
-    public static DrawableWithUri drawImageUri(ContentResolver contentResolver, int i, float f, WeakReference weakReference, WeakReference weakReference2, Uri uri) {
-        DrawableWithUri drawableWithUri = new DrawableWithUri(f, i, contentResolver, uri, weakReference, weakReference2);
-        new LoadUriTask().execute(drawableWithUri);
-        return drawableWithUri;
-    }
-
-    private void setRoundedBitmapDrawable(Bitmap bm) {
-        if (bm.getHeight() != 0) {
-            int dimension = (int) getResources().getDimension(R.dimen.enhanced_smartspace_height);
-            bm = Bitmap.createScaledBitmap(bm, dimension * (bm.getWidth() / bm.getHeight()), dimension, true);
-        }
-        RoundedBitmapDrawable create = RoundedBitmapDrawableFactory.create(getResources(), bm);
-        create.setCornerRadius(getResources().getDimension(R.dimen.enhanced_smartspace_secondary_card_corner_radius));
-        this.mImageView.setImageDrawable(create);
+        this(context, null);
     }
 
     public final void maybeResetImageView(SmartspaceTarget smartspaceTarget) {
+        boolean equals = smartspaceTarget.getSmartspaceTargetId().equals(this.mPreviousTargetId);
         this.mPreviousTargetId = smartspaceTarget.getSmartspaceTargetId();
-        if (!smartspaceTarget.getSmartspaceTargetId().equals(this.mPreviousTargetId)) {
-            this.mImageView.getLayoutParams().width = -2;
-            this.mImageView.setImageDrawable(null);
-            this.mUriToDrawable.clear();
+        if (equals) {
+            return;
+        }
+        this.mImageView.getLayoutParams().width = -2;
+        this.mImageView.setImageDrawable(null);
+        this.mUriToDrawable.clear();
+    }
+
+    public final void maybeUpdateLayoutHeight(Bundle bundle, View view, String str) {
+        if (bundle.containsKey(str)) {
+            view.getLayoutParams().height = (int) (getContext().getResources().getDisplayMetrics().density * bundle.getInt(str));
         }
     }
 
-    private void showLoadingScreen(String str, Bundle extras, int i) {
-        BcSmartspaceTemplateDataUtils.updateVisibility(this.mImageView, 8);
-        ((ConstraintLayout.LayoutParams) this.mLoadingScreenView.getLayoutParams()).dimensionRatio = str;
-        this.mLoadingScreenView.setBackgroundTintList(ColorStateList.valueOf(getContext().getColor(R.color.smartspace_button_background)));
-        BcSmartspaceTemplateDataUtils.updateVisibility(this.mLoadingScreenView, 0);
-        toggleProgressBarAndLoadingIcon(extras, i);
+    public final void maybeUpdateLayoutWidth(Bundle bundle, View view, String str) {
+        if (bundle.containsKey(str)) {
+            view.getLayoutParams().width = (int) (getContext().getResources().getDisplayMetrics().density * bundle.getInt(str));
+        }
     }
 
-    private void toggleProgressBarAndLoadingIcon(Bundle extras, int i) {
-        boolean showProgress;
-        int vis;
-        if (extras.containsKey("progressBarWidth")) {
-            this.mProgressBar.getLayoutParams().width = (int) (getContext().getResources().getDisplayMetrics().density * extras.getInt("progressBarWidth"));
-        }
-        if (extras.containsKey("progressBarHeight")) {
-            this.mProgressBar.getLayoutParams().height = (int) (getContext().getResources().getDisplayMetrics().density * extras.getInt("progressBarHeight"));
-        }
-        this.mProgressBar.setIndeterminateTintList(ColorStateList.valueOf(getContext().getColor(R.color.smartspace_button_text)));
-        if (i == 1) {
-            showProgress = true;
-        } else if (i == 4) {
-            showProgress = extras.getBoolean("progressBarVisible", true);
-        } else {
-            showProgress = false;
-        }
-        if (showProgress) {
-            vis = 0;
-        } else {
-            vis = 8;
-        }
-        BcSmartspaceTemplateDataUtils.updateVisibility(this.mProgressBar, showProgress ? 0 : 8);
-        if (extras.containsKey("loadingIconWidth")) {
-            this.mLoadingIcon.getLayoutParams().width = (int) (getContext().getResources().getDisplayMetrics().density * extras.getInt("loadingIconWidth"));
-        }
-        if (extras.containsKey("loadingIconHeight")) {
-            this.mLoadingIcon.getLayoutParams().height = (int) (getContext().getResources().getDisplayMetrics().density * extras.getInt("loadingIconHeight"));
-        }
-        if (i == 2) {
-            this.mLoadingIcon.setImageDrawable(getContext().getDrawable(R.drawable.videocam));
-        } else if (i == 3) {
-            this.mLoadingIcon.setImageDrawable(getContext().getDrawable(R.drawable.videocam_off));
-        } else if (i == 4 || extras.containsKey("loadingScreenIcon")) {
-            this.mLoadingIcon.setImageBitmap((Bitmap) extras.get("loadingScreenIcon"));
-            if (extras.getBoolean("tintLoadingIcon", false)) {
-                this.mLoadingIcon.setColorFilter(getContext().getColor(R.color.smartspace_button_text));
-            }
-        }
-        BcSmartspaceTemplateDataUtils.updateVisibility(this.mLoadingIcon, vis);
-    }
-
-    @Override // com.google.android.systemui.smartspace.BcSmartspaceCardGenericImage
+    @Override // com.google.android.systemui.smartspace.BcSmartspaceCardGenericImage, android.view.View
     public final void onFinishInflate() {
         super.onFinishInflate();
         this.mLoadingScreenView = (ViewGroup) findViewById(R.id.loading_screen);
@@ -226,83 +233,24 @@ public class BcSmartspaceCardDoorbell extends BcSmartspaceCardGenericImage {
         BcSmartspaceTemplateDataUtils.updateVisibility(this.mLoadingIcon, 8);
     }
 
-    public static Drawable getSampleBitmapDrawable(InputStream inputStream, final int i) {
-        try {
-            return ImageDecoder.decodeDrawable(
-                    ImageDecoder.createSource(null, inputStream),
-                    new ImageDecoder.OnHeaderDecodedListener() {
-                        @Override
-                        public final void onHeaderDecoded(
-                                ImageDecoder imageDecoder,
-                                ImageDecoder.ImageInfo imageInfo,
-                                ImageDecoder.Source source) {
-                            float f;
-                            imageDecoder.setAllocator(3);
-                            Size size = imageInfo.getSize();
-                            if (size.getHeight() != 0) {
-                                f = size.getWidth() / size.getHeight();
-                            } else {
-                                f = 0.0f;
-                            }
-                            imageDecoder.setTargetSize((int) (i * f), i);
-                        }
-                    });
-        } catch (IOException e) {
-            Log.e("BcSmartspaceCardBell", "Unable to decode stream: " + e);
-            return null;
-        }
+    /* JADX WARN: Removed duplicated region for block: B:56:0x0268  */
+    @Override // com.google.android.systemui.smartspace.BcSmartspaceCardGenericImage, com.google.android.systemui.smartspace.BcSmartspaceCardSecondary
+    /*
+        Code decompiled incorrectly, please refer to instructions dump.
+        To view partially-correct add '--show-bad-code' argument
+    */
+    public final boolean setSmartspaceActions(android.app.smartspace.SmartspaceTarget r16, com.android.systemui.plugins.BcSmartspaceDataPlugin.SmartspaceEventNotifier r17, com.google.android.systemui.smartspace.logging.BcSmartspaceCardLoggingInfo r18) {
+        /*
+            Method dump skipped, instructions count: 622
+            To view this dump add '--comments-level debug' option
+        */
+        throw new UnsupportedOperationException("Method not decompiled: com.google.android.systemui.smartspace.BcSmartspaceCardDoorbell.setSmartspaceActions(android.app.smartspace.SmartspaceTarget, com.android.systemui.plugins.BcSmartspaceDataPlugin$SmartspaceEventNotifier, com.google.android.systemui.smartspace.logging.BcSmartspaceCardLoggingInfo):boolean");
     }
 
-    public static class DrawableWithUri extends RoundDrawableWrapper {
-        public ContentResolver mContentResolver;
-        public Drawable mDrawable;
-        public int mHeightInPx;
-        public WeakReference<ImageView> mImageViewWeakReference;
-        public WeakReference<View> mLoadingScreenWeakReference;
-        public Uri mUri;
-
-        public DrawableWithUri(float f, int height, ContentResolver contentResolver, Uri uri, WeakReference imageViewWeakReference, WeakReference loadingScreenWeakReference) {
-            super(new ColorDrawable(0), f);
-            this.mUri = uri;
-            this.mHeightInPx = height;
-            this.mContentResolver = contentResolver;
-            this.mImageViewWeakReference = imageViewWeakReference;
-            this.mLoadingScreenWeakReference = loadingScreenWeakReference;
-        }
-    }
-
-    public static class LoadUriTask extends AsyncTask<DrawableWithUri, Void, DrawableWithUri> {
-        @Override // android.os.AsyncTask
-        public final DrawableWithUri doInBackground(DrawableWithUri[] drawableWithUriArr) {
-            if (drawableWithUriArr.length > 0) {
-                DrawableWithUri drawableWithUri = drawableWithUriArr[0];
-                try {
-                    drawableWithUri.mDrawable = BcSmartspaceCardDoorbell.getSampleBitmapDrawable(drawableWithUri.mContentResolver.openInputStream(drawableWithUri.mUri), drawableWithUri.mHeightInPx);
-                } catch (Exception e) {
-                    Log.w("BcSmartspaceCardBell", "open uri:" + drawableWithUri.mUri + " got exception:" + e);
-                }
-                return drawableWithUri;
-            }
-            return null;
-        }
-
-        @Override // android.os.AsyncTask
-        public final void onPostExecute(DrawableWithUri drawableWithUri) {
-            if (drawableWithUri != null) {
-                if (drawableWithUri.mDrawable != null) {
-                    drawableWithUri.setDrawable(drawableWithUri.mDrawable);
-                    ImageView imageView = drawableWithUri.mImageViewWeakReference.get();
-                    int intrinsicWidth = drawableWithUri.mDrawable.getIntrinsicWidth();
-                    if (imageView.getLayoutParams().width != intrinsicWidth) {
-                        Log.d("BcSmartspaceCardBell", "imageView requestLayout " + drawableWithUri.mUri);
-                        imageView.getLayoutParams().width = intrinsicWidth;
-                        imageView.requestLayout();
-                    }
-                } else {
-                    BcSmartspaceTemplateDataUtils.updateVisibility(drawableWithUri.mImageViewWeakReference.get(), 8);
-                }
-                BcSmartspaceTemplateDataUtils.updateVisibility(drawableWithUri.mLoadingScreenWeakReference.get(), 8);
-            }
-        }
+    public BcSmartspaceCardDoorbell(Context context, AttributeSet attributeSet) {
+        super(context, attributeSet);
+        this.mUriToDrawable = new HashMap();
+        this.mGifFrameDurationInMs = 200;
+        this.mLatencyInstrumentContext = new LatencyInstrumentContext(context);
     }
 }

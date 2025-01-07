@@ -7,51 +7,16 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import com.android.systemui.bcsmartspace.R;
 
-public final class BcSmartspaceTemplateDataUtils {
-    public static int getSecondaryCardRes(int i) {
-        switch (i) {
-            case 2:
-                return R.layout.smartspace_sub_image_template_card;
-            case 3:
-                return R.layout.smartspace_sub_list_template_card;
-            case 4:
-                return R.layout.smartspace_carousel_template_card;
-            case 5:
-                return R.layout.smartspace_head_to_head_template_card;
-            case 6:
-                return R.layout.smartspace_combined_cards_template_card;
-            case 7:
-                return R.layout.smartspace_sub_card_template_card;
-            default:
-                return 0;
-        }
-    }
-
-    public static void offsetImageViewForIcon(ImageView imageView, DoubleShadowIconDrawable doubleShadowIconDrawable) {
-        if (doubleShadowIconDrawable == null) {
-            imageView.setTranslationX(0.0f);
-            imageView.setTranslationY(0.0f);
-            return;
-        }
-        float f = -doubleShadowIconDrawable.mIconInsetSize;
-        imageView.setTranslationX(f);
-        imageView.setTranslationY(f);
-    }
-
+/* compiled from: go/retraceme 97024faaf470985feb378c0f604e66d2eca678dbbb151206fad2ab4525fd6f86 */
+/* loaded from: classes2.dex */
+public abstract class BcSmartspaceTemplateDataUtils {
     public static void offsetTextViewForIcon(TextView textView, DoubleShadowIconDrawable doubleShadowIconDrawable, boolean z) {
-        int i;
         if (doubleShadowIconDrawable == null) {
             textView.setTranslationX(0.0f);
-            return;
-        }
-        if (z) {
-            i = 1;
         } else {
-            i = -1;
+            textView.setTranslationX((z ? 1 : -1) * doubleShadowIconDrawable.mIconInsetSize);
         }
-        textView.setTranslationX(i * doubleShadowIconDrawable.mIconInsetSize);
     }
 
     public static void setIcon(ImageView imageView, Icon icon) {
@@ -77,15 +42,17 @@ public final class BcSmartspaceTemplateDataUtils {
         if (SmartspaceUtils.isEmpty(text)) {
             Log.w("BcSmartspaceTemplateDataUtils", "Cannot set. The given text is empty");
             updateVisibility(textView, 8);
+        } else {
+            textView.setText(text.getText());
+            textView.setEllipsize(text.getTruncateAtType());
+            textView.setMaxLines(text.getMaxLines());
         }
-        textView.setText(text.getText());
-        textView.setEllipsize(text.getTruncateAtType());
-        textView.setMaxLines(text.getMaxLines());
     }
 
     public static void updateVisibility(View view, int i) {
-        if (view != null && view.getVisibility() != i) {
-            view.setVisibility(i);
+        if (view == null || view.getVisibility() == i) {
+            return;
         }
+        view.setVisibility(i);
     }
 }
