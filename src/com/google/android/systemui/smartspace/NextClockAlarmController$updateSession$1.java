@@ -95,9 +95,6 @@ final class NextClockAlarmController$updateSession$1 extends SuspendLambda imple
                 ObserverCallback observerCallback = (ObserverCallback) globalSearchSessionImpl.mObserverCallbacksLocked.get(nextClockAlarmController$observerCallback$1);
                 if (observerCallback == null) {
                     observerCallback = new ObserverCallback() { // from class: androidx.appsearch.platformstorage.GlobalSearchSessionImpl.1
-                        public AnonymousClass1() {
-                        }
-
                         @Override // android.app.appsearch.observer.ObserverCallback
                         public final void onDocumentChanged(DocumentChangeInfo documentChangeInfo) {
                             documentChangeInfo.getClass();
